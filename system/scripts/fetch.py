@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, List, Optional
+import subprocess
+import json
 
 import feedparser
 import requests
@@ -107,30 +109,10 @@ def load_sources() -> List[FeedSource]:
     return sources
 
 
-def resolve_youtube_feed(url: str) -> Optional[str]:
-    if "youtube.com/feeds/videos.xml" in url:
-        return url
-    if "youtube.com" not in url:
-        return url
-    headers = {"User-Agent": "fpv-daily-bot/1.0 (+https://github.com/)"}
-    resp = requests.get(url, headers=headers, timeout=20)
-    resp.raise_for_status()
-    match = re.search(r'"channelId":"(UC[0-9A-Za-z_-]+)"', resp.text)
-    if match:
-        return f"https://www.youtube.com/feeds/videos.xml?channel_id={match.group(1)}"
-    match = re.search(r"channel_id=([0-9A-Za-z_-]+)", resp.text)
-    if match:
-        return f"https://www.youtube.com/feeds/videos.xml?channel_id={match.group(1)}"
-    return None
 
 
 def fetch_feed(url: str) -> feedparser.FeedParserDict:
     headers = {"User-Agent": "fpv-daily-bot/1.0 (+https://github.com/)"}
-    if "youtube.com" in url and "feeds/videos.xml" not in url:
-        resolved = resolve_youtube_feed(url)
-        if not resolved:
-            raise RuntimeError("Unable to resolve YouTube channel feed")
-        url = resolved
     resp = requests.get(url, headers=headers, timeout=20)
     resp.raise_for_status()
     return feedparser.parse(resp.content)
@@ -186,7 +168,7 @@ def item_from_entry(source: FeedSource, entry: feedparser.FeedParserDict) -> Opt
         return None
     published_dt = parse_date(entry)
     if not published_dt:
-        published_dt = datetime.now(timezone.utc)
+        return None
     if not published_dt.tzinfo:
         published_dt = published_dt.replace(tzinfo=timezone.utc)
     summary = normalize_summary(entry.get("summary", "") or entry.get("description", ""))
@@ -216,7 +198,7 @@ def is_youtube(link: str) -> bool:
     return "youtube.com" in link.lower() or "youtu.be" in link.lower()
 
 
-def short_summary(text: str, max_len: int = 220) -> str:
+def short_summary(text: str, max_len: int = 160) -> str:
     if not text:
         return ""
     if len(text) <= max_len:
@@ -224,11 +206,25 @@ def short_summary(text: str, max_len: int = 220) -> str:
     return text[: max_len - 3].rstrip() + "..."
 
 
-def render_magazine(items: List[Item], date_str: str, limit: int = 30) -> str:
+def render_magazine(items: List[Item], date_str: str) -> str:
     lines = [
         f"# Your FPV Daily News — {date_str}",
         "",
-        "A quick-read FPV magazine: top stories, videos, and community highlights.",
+        "_A clean, daily FPV magazine with the best stories, gear updates, and videos — in plain language._",
+        "",
+        "---",
+        "",
+        "## At a Glance",
+        "",
+        "- Top Stories (fast read, clear takeaways)",
+        "- Gear & Market Watch (new releases, firmware, companies)",
+        "- Videos (what to watch today)",
+        "",
+        "---",
+        "",
+        "## Editor's Note",
+        "",
+        "Fresh FPV drops and community highlights, distilled for a quick read — no digging required.",
         "",
     ]
 
@@ -241,34 +237,96 @@ def render_magazine(items: List[Item], date_str: str, limit: int = 30) -> str:
     gear = [i for i in news if is_gear_related(f"{i.title} {i.summary}")]
     general = [i for i in news if i not in gear]
 
-    def render_section(title: str, section_items: List[Item]) -> None:
+    def render_section(title: str, section_items: List[Item], max_items: int) -> None:
         lines.append(f"## {title}")
         lines.append("")
         if not section_items:
-            lines.append("- No items today.")
+            lines.append("No items today.")
             lines.append("")
             return
-        for item in section_items[:limit]:
+        for item in section_items[:max_items]:
             published = item.published[:10]
             summary = short_summary(item.summary)
+            lines.append(f"### {item.title}")
+            lines.append(f"_Source: {item.source} · {published}_")
+            lines.append("")
             if summary:
-                lines.append(f"- [{item.title}]({item.link}) — {item.source} ({published})")
-                lines.append(f"  {summary}")
+                lines.append(f"**Quick summary:** {summary}")
             else:
-                lines.append(f"- [{item.title}]({item.link}) — {item.source} ({published})")
-        lines.append("")
+                lines.append("**Quick summary:** No summary available in the feed.")
+            lines.append("")
+            lines.append(f"_Read more:_ {item.link}")
+            lines.append("")
 
-    render_section("Top Stories", general)
-    render_section("Gear & Market Watch", gear)
-    render_section("Videos", videos)
+    render_section("Top Stories", general, 6)
+    render_section("Gear & Market Watch", gear, 4)
+    render_section("Videos", videos, 4)
+
+    lines.append("---")
+    lines.append("")
+    lines.append("_More tomorrow. Fly safe and keep it smooth._")
+    lines.append("")
 
     return "\n".join(lines) + "\n"
+
+
+def fetch_youtube_items(source: FeedSource, max_items: int = 6) -> List[Item]:
+    try:
+        result = subprocess.run(
+            [
+                "yt-dlp",
+                "--dump-json",
+                "--skip-download",
+                "--playlist-end",
+                str(max_items),
+                source.url,
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=40,
+        )
+    except Exception as exc:
+        raise RuntimeError(f"yt-dlp failed: {exc}") from exc
+
+    items: List[Item] = []
+    for line in result.stdout.splitlines():
+        if not line.strip():
+            continue
+        try:
+            data = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        title = (data.get("title") or "").strip()
+        link = (data.get("webpage_url") or "").strip()
+        if not title or not link:
+            continue
+        ts = data.get("timestamp")
+        if ts is None and data.get("upload_date"):
+            try:
+                ts = datetime.strptime(data["upload_date"], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp()
+            except Exception:
+                ts = None
+        if ts is None:
+            continue
+        summary = normalize_summary(data.get("description") or "")
+        items.append(
+            Item(
+                title=title,
+                link=link,
+                source=source.name,
+                published=datetime.fromtimestamp(ts, tz=timezone.utc).isoformat(),
+                published_ts=float(ts),
+                summary=summary,
+            )
+        )
+    return items
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--date", help="YYYY-MM-DD (defaults to today UTC)")
-    parser.add_argument("--limit", type=int, default=30)
+    parser.add_argument("--days", type=int, default=30)
     args = parser.parse_args()
 
     if args.date:
@@ -287,6 +345,9 @@ def main() -> int:
 
     for source in sources:
         try:
+            if "youtube.com" in source.url:
+                items.extend(fetch_youtube_items(source))
+                continue
             feed = fetch_feed(source.url)
         except Exception as exc:
             print(f"Failed to fetch {source.url}: {exc}", file=sys.stderr)
@@ -301,8 +362,12 @@ def main() -> int:
 
     items = dedupe(items)
     items.sort(key=lambda i: i.published_ts, reverse=True)
+    cutoff = datetime.combine(date_obj, datetime.min.time(), tzinfo=timezone.utc).timestamp() - (
+        args.days * 24 * 60 * 60
+    )
+    items = [i for i in items if i.published_ts >= cutoff]
 
-    latest_md = render_magazine(items, date_str, limit=args.limit)
+    latest_md = render_magazine(items, date_str)
     ISSUES_DIR.mkdir(parents=True, exist_ok=True)
     issue_md_path = ISSUES_DIR / f"{date_str}.md"
     issue_md_path.write_text(latest_md, encoding="utf-8")
