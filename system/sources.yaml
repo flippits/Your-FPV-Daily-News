@@ -1,4 +1,16 @@
 sources:
+  - name: Joshua Bardwell (YouTube)
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UCX3eufnI7A2I7IkKHZn8KSQ
+    scope: fpv
+  - name: Rotor Riot (YouTube)
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UCemG3VoNCmjP8ucHR2YY7hw
+    scope: fpv
+  - name: Mr Steele (YouTube)
+    url: https://www.youtube.com/@mrsteelefpv
+    scope: fpv
+  - name: Le Drib (YouTube)
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UCHxiKnzTyzE9Qez8ZGpQbPQ
+    scope: fpv
   - name: Oscar Liang
     url: https://oscarliang.com/feed
     scope: fpv

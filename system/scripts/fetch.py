@@ -40,6 +40,46 @@ KEYWORDS = [
 
 KEYWORD_RE = re.compile(r"\b(" + "|".join(re.escape(k) for k in KEYWORDS) + r")\b", re.I)
 
+GEAR_KEYWORDS = [
+    "frame",
+    "motor",
+    "esc",
+    "flight controller",
+    "fc",
+    "goggles",
+    "vtx",
+    "antenna",
+    "receiver",
+    "rx",
+    "tx",
+    "lipo",
+    "battery",
+    "charger",
+    "firmware",
+    "betaflight",
+    "expresslrs",
+    "elrs",
+    "walksnail",
+    "hdzero",
+    "dji",
+    "o3",
+    "launch",
+    "release",
+    "announces",
+    "announcement",
+    "new product",
+    "version",
+    "v2",
+    "v3",
+    "v4",
+    "acquisition",
+    "acquires",
+    "merger",
+    "partnership",
+]
+
+GEAR_RE = re.compile(r"\b(" + "|".join(re.escape(k) for k in GEAR_KEYWORDS) + r")\b", re.I)
+
 
 @dataclass
 class FeedSource:
@@ -67,8 +107,30 @@ def load_sources() -> List[FeedSource]:
     return sources
 
 
+def resolve_youtube_feed(url: str) -> Optional[str]:
+    if "youtube.com/feeds/videos.xml" in url:
+        return url
+    if "youtube.com" not in url:
+        return url
+    headers = {"User-Agent": "fpv-daily-bot/1.0 (+https://github.com/)"}
+    resp = requests.get(url, headers=headers, timeout=20)
+    resp.raise_for_status()
+    match = re.search(r'"channelId":"(UC[0-9A-Za-z_-]+)"', resp.text)
+    if match:
+        return f"https://www.youtube.com/feeds/videos.xml?channel_id={match.group(1)}"
+    match = re.search(r"channel_id=([0-9A-Za-z_-]+)", resp.text)
+    if match:
+        return f"https://www.youtube.com/feeds/videos.xml?channel_id={match.group(1)}"
+    return None
+
+
 def fetch_feed(url: str) -> feedparser.FeedParserDict:
     headers = {"User-Agent": "fpv-daily-bot/1.0 (+https://github.com/)"}
+    if "youtube.com" in url and "feeds/videos.xml" not in url:
+        resolved = resolve_youtube_feed(url)
+        if not resolved:
+            raise RuntimeError("Unable to resolve YouTube channel feed")
+        url = resolved
     resp = requests.get(url, headers=headers, timeout=20)
     resp.raise_for_status()
     return feedparser.parse(resp.content)
@@ -93,6 +155,12 @@ def is_fpv_relevant(text: str) -> bool:
     if not text:
         return False
     return bool(KEYWORD_RE.search(text))
+
+
+def is_gear_related(text: str) -> bool:
+    if not text:
+        return False
+    return bool(GEAR_RE.search(text))
 
 
 def normalize_summary(text: str) -> str:
@@ -170,6 +238,8 @@ def render_magazine(items: List[Item], date_str: str, limit: int = 30) -> str:
 
     videos = [i for i in items if is_youtube(i.link)]
     news = [i for i in items if not is_youtube(i.link)]
+    gear = [i for i in news if is_gear_related(f"{i.title} {i.summary}")]
+    general = [i for i in news if i not in gear]
 
     def render_section(title: str, section_items: List[Item]) -> None:
         lines.append(f"## {title}")
@@ -188,7 +258,8 @@ def render_magazine(items: List[Item], date_str: str, limit: int = 30) -> str:
                 lines.append(f"- [{item.title}]({item.link}) — {item.source} ({published})")
         lines.append("")
 
-    render_section("Top Stories", news)
+    render_section("Top Stories", general)
+    render_section("Gear & Market Watch", gear)
     render_section("Videos", videos)
 
     return "\n".join(lines) + "\n"
