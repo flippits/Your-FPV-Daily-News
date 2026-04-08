@@ -4,3 +4,11 @@ Welcome to a daily, magazine‑style digest of FPV drone news, videos, and commu
 
 **Latest issue:** See the newest file in `issues/`  
 Each day a new dated issue is published in Markdown, ready to read like a quick morning magazine.
+
+![FPV racing quadcopter](https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/FPV_Quadrocopter.jpg/1280px-FPV_Quadrocopter.jpg)
+
+![FPV drone, goggles, and controller](https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Remote_Control_FPV_drone_FPV_Goggles.jpg/1280px-Remote_Control_FPV_drone_FPV_Goggles.jpg)
+
+**Image credits:**  
+FPV Quadrocopter by Clicklabs (CC BY‑SA 4.0).  
+Remote Control FPV drone FPV Goggles by Wacou123 (CC BY‑SA 4.0).

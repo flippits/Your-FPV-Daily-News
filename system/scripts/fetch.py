@@ -42,6 +42,11 @@ KEYWORDS = [
 
 KEYWORD_RE = re.compile(r"\b(" + "|".join(re.escape(k) for k in KEYWORDS) + r")\b", re.I)
 
+MAGAZINE_IMAGE_URL = (
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/FPV_Quadrocopter.jpg/1280px-FPV_Quadrocopter.jpg"
+)
+MAGAZINE_IMAGE_CREDIT = "FPV Quadrocopter by Clicklabs (CC BY-SA 4.0)"
+
 GEAR_KEYWORDS = [
     "frame",
     "motor",
@@ -212,6 +217,8 @@ def render_magazine(items: List[Item], date_str: str) -> str:
         "",
         "_A clean, daily FPV magazine with the best stories, gear updates, and videos — in plain language._",
         "",
+        f"![FPV racing quadcopter]({MAGAZINE_IMAGE_URL})",
+        "",
         "---",
         "",
         "## At a Glance",
@@ -265,6 +272,8 @@ def render_magazine(items: List[Item], date_str: str) -> str:
     lines.append("---")
     lines.append("")
     lines.append("_More tomorrow. Fly safe and keep it smooth._")
+    lines.append("")
+    lines.append(f"_Image credit:_ {MAGAZINE_IMAGE_CREDIT}")
     lines.append("")
 
     return "\n".join(lines) + "\n"
