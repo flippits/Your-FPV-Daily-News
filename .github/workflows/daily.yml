@@ -24,4 +24,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: daily fpv digest"
-          file_pattern: "data/*.json data/*.md README.md"
+          file_pattern: "data/*.json data/*.md issues/*.md README.md"

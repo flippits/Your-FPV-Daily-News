@@ -15,6 +15,7 @@ from dateutil import parser as date_parser
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
+ISSUES_DIR = ROOT / "issues"
 SOURCES_PATH = ROOT / "sources.yaml"
 README_PATH = ROOT / "README.md"
 
@@ -146,21 +147,53 @@ def dedupe(items: Iterable[Item]) -> List[Item]:
     return unique
 
 
-def render_markdown(items: List[Item], date_str: str, limit: int = 30) -> str:
+def is_youtube(link: str) -> bool:
+    return "youtube.com" in link.lower() or "youtu.be" in link.lower()
+
+
+def short_summary(text: str, max_len: int = 220) -> str:
+    if not text:
+        return ""
+    if len(text) <= max_len:
+        return text
+    return text[: max_len - 3].rstrip() + "..."
+
+
+def render_magazine(items: List[Item], date_str: str, limit: int = 30) -> str:
     lines = [
-        f"# FPV Drone Daily Digest — {date_str}",
+        f"# Your FPV Daily News — {date_str}",
         "",
-        "Latest FPV-relevant news pulled from trusted community and industry feeds.",
+        "A quick-read FPV magazine: top stories, videos, and community highlights.",
         "",
     ]
+
     if not items:
         lines.append("No FPV-related items found today. Check back tomorrow.")
         return "\n".join(lines) + "\n"
 
-    for item in items[:limit]:
-        published = item.published[:10]
-        lines.append(f"- [{item.title}]({item.link}) — {item.source} ({published})")
-    lines.append("")
+    videos = [i for i in items if is_youtube(i.link)]
+    news = [i for i in items if not is_youtube(i.link)]
+
+    def render_section(title: str, section_items: List[Item]) -> None:
+        lines.append(f"## {title}")
+        lines.append("")
+        if not section_items:
+            lines.append("- No items today.")
+            lines.append("")
+            return
+        for item in section_items[:limit]:
+            published = item.published[:10]
+            summary = short_summary(item.summary)
+            if summary:
+                lines.append(f"- [{item.title}]({item.link}) — {item.source} ({published})")
+                lines.append(f"  {summary}")
+            else:
+                lines.append(f"- [{item.title}]({item.link}) — {item.source} ({published})")
+        lines.append("")
+
+    render_section("Top Stories", news)
+    render_section("Videos", videos)
+
     return "\n".join(lines) + "\n"
 
 
@@ -172,7 +205,7 @@ def update_readme(latest_md: str, date_str: str) -> None:
         "",
         f"**Latest digest:** {date_str}",
         "",
-        "## Today",
+        "## Latest Issue",
         "",
         latest_md.strip(),
         "",
@@ -180,7 +213,7 @@ def update_readme(latest_md: str, date_str: str) -> None:
         "",
         "- Pulls RSS/Atom feeds from FPV-first sources and broader drone publications.",
         "- Filters general drone feeds for FPV-relevant keywords.",
-        "- Writes a dated JSON file plus a Markdown digest each day.",
+        "- Writes a dated JSON file plus a magazine-style Markdown issue each day.",
         "",
         "## Run Locally",
         "",
@@ -252,9 +285,13 @@ def main() -> int:
     latest_json = DATA_DIR / "latest.json"
     latest_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
-    latest_md = render_markdown(items, date_str, limit=args.limit)
+    latest_md = render_magazine(items, date_str, limit=args.limit)
     latest_md_path = DATA_DIR / "latest.md"
     latest_md_path.write_text(latest_md, encoding="utf-8")
+
+    ISSUES_DIR.mkdir(parents=True, exist_ok=True)
+    issue_md_path = ISSUES_DIR / f"{date_str}.md"
+    issue_md_path.write_text(latest_md, encoding="utf-8")
 
     update_readme(latest_md, date_str)
     return 0
