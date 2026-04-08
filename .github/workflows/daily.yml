@@ -1,5 +1,9 @@
 name: Daily FPV Digest
 
+concurrency:
+  group: daily-fpv-digest
+  cancel-in-progress: false
+
 on:
   schedule:
     - cron: "0 11 * * *" # 7am US Eastern during daylight time (UTC-4); 6am during standard time (UTC-5)
@@ -11,6 +15,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

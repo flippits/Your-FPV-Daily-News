@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import html
 import re
 import sys
 from dataclasses import dataclass
@@ -118,7 +119,7 @@ def load_sources() -> List[FeedSource]:
 
 def fetch_feed(url: str) -> feedparser.FeedParserDict:
     headers = {"User-Agent": "fpv-daily-bot/1.0 (+https://github.com/)"}
-    resp = requests.get(url, headers=headers, timeout=20)
+    resp = requests.get(url, headers=headers, timeout=(5, 20))
     resp.raise_for_status()
     return feedparser.parse(resp.content)
 
@@ -153,6 +154,7 @@ def is_gear_related(text: str) -> bool:
 def normalize_summary(text: str) -> str:
     if not text:
         return ""
+    text = html.unescape(text)
     text = re.sub(r"<[^>]+>", "", text)
     text = re.sub(r"\s+", " ", text).strip()
     return text
@@ -177,6 +179,8 @@ def item_from_entry(source: FeedSource, entry: feedparser.FeedParserDict) -> Opt
     if not published_dt.tzinfo:
         published_dt = published_dt.replace(tzinfo=timezone.utc)
     summary = normalize_summary(entry.get("summary", "") or entry.get("description", ""))
+    if summary.lower().startswith(title.lower()):
+        summary = summary[len(title) :].lstrip(" -:—")
     return Item(
         title=title,
         link=link,
@@ -208,7 +212,10 @@ def short_summary(text: str, max_len: int = 160) -> str:
         return ""
     if len(text) <= max_len:
         return text
-    return text[: max_len - 3].rstrip() + "..."
+    trimmed = text[: max_len - 3].rstrip()
+    if " " in trimmed:
+        trimmed = trimmed.rsplit(" ", 1)[0]
+    return trimmed + "..."
 
 
 def render_magazine(items: List[Item], date_str: str) -> str:
@@ -285,7 +292,13 @@ def fetch_youtube_items(source: FeedSource, max_items: int = 6) -> List[Item]:
             [
                 "yt-dlp",
                 "--dump-json",
+                "--ignore-errors",
+                "--no-warnings",
                 "--skip-download",
+                "--extractor-retries",
+                "1",
+                "--socket-timeout",
+                "10",
                 "--playlist-end",
                 str(max_items),
                 source.url,
@@ -293,7 +306,7 @@ def fetch_youtube_items(source: FeedSource, max_items: int = 6) -> List[Item]:
             check=True,
             capture_output=True,
             text=True,
-            timeout=40,
+            timeout=25,
         )
     except Exception as exc:
         raise RuntimeError(f"yt-dlp failed: {exc}") from exc
@@ -335,7 +348,7 @@ def fetch_youtube_items(source: FeedSource, max_items: int = 6) -> List[Item]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--date", help="YYYY-MM-DD (defaults to today UTC)")
-    parser.add_argument("--days", type=int, default=30)
+    parser.add_argument("--days", type=int, default=14)
     args = parser.parse_args()
 
     if args.date:
@@ -362,7 +375,7 @@ def main() -> int:
             print(f"Failed to fetch {source.url}: {exc}", file=sys.stderr)
             continue
 
-        for entry in feed.entries:
+        for entry in feed.entries[:50]:
             if not should_include(source, entry):
                 continue
             item = item_from_entry(source, entry)
