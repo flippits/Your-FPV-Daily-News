@@ -2,7 +2,7 @@
 
 Welcome to a daily, magazine‑style digest of FPV drone news, videos, and community highlights.
 
-**Latest issue:** See the newest file in `issues/`  
+**Latest issue:** See the newest folder in `issues/` (each issue is a `README.md`)  
 Each day a new dated issue is published in Markdown, ready to read like a quick morning magazine.
 
 ![FPV racing quadcopter](https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/FPV_Quadrocopter.jpg/1280px-FPV_Quadrocopter.jpg)

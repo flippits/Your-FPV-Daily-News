@@ -377,8 +377,9 @@ def main() -> int:
     items = [i for i in items if i.published_ts >= cutoff]
 
     latest_md = render_magazine(items, date_str)
-    ISSUES_DIR.mkdir(parents=True, exist_ok=True)
-    issue_md_path = ISSUES_DIR / f"{date_str}.md"
+    issue_dir = ISSUES_DIR / date_str
+    issue_dir.mkdir(parents=True, exist_ok=True)
+    issue_md_path = issue_dir / "README.md"
     issue_md_path.write_text(latest_md, encoding="utf-8")
     return 0
 
