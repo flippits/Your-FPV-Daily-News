@@ -1,0 +1,22 @@
+sources:
+  - name: Oscar Liang
+    url: https://oscarliang.com/feed
+    scope: fpv
+  - name: FPV Report
+    url: https://www.fpv-report.com/feed
+    scope: fpv
+  - name: UAV Coach (FPV Racing)
+    url: https://uavcoach.com/category/fpv-racing/feed
+    scope: fpv
+  - name: Top FPV Drone
+    url: https://topfpvdrone.com/feed
+    scope: fpv
+  - name: NordFPV Blog
+    url: https://nordfpv.com/blogs/news.atom
+    scope: fpv
+  - name: sUAS News
+    url: https://www.suasnews.com/feed
+    scope: general
+  - name: DroneLife
+    url: https://dronelife.com/feed
+    scope: general

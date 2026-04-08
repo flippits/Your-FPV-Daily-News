@@ -1,0 +1,27 @@
+name: Daily FPV Digest
+
+on:
+  schedule:
+    - cron: "0 11 * * *" # 7am US Eastern during daylight time (UTC-4); 6am during standard time (UTC-5)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Build digest
+        run: python scripts/fetch.py
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: daily fpv digest"
+          file_pattern: "data/*.json data/*.md README.md"
