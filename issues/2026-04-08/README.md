@@ -30,58 +30,44 @@ _Read more:_ https://www.suasnews.com/2026/04/general-cherry-partnering-with-orq
 ### Building the Lightest Tiny Whoop from BNF Parts (Air65 & RaceSpec)
 _Source: Oscar Liang · 2026-03-27_
 
-**Quick summary:** Building the Lightest Tiny Whoop from BNF Parts (Air65 &#038; RaceSpec) Making your tiny whoop lighter can improve flight performance and efficiency. Modern...
+**Quick summary:** Making your tiny whoop lighter can improve flight performance and efficiency. Modern BNF tiny whoops weigh as low as 17g, so even saving half a gram makes...
 
 _Read more:_ https://oscarliang.com/lightest-tiny-whoop/
 
 ### Tools for Removing Tiny Whoop Propellers – Which Prop Puller Is the Best?
 _Source: Oscar Liang · 2026-03-26_
 
-**Quick summary:** Tools for Removing Tiny Whoop Propellers – Which Prop Puller Is the Best? Removing propellers from tiny whoops (65mm, 75mm, and 85mm micro whoops) has always...
+**Quick summary:** Removing propellers from tiny whoops (65mm, 75mm, and 85mm micro whoops) has always been a fiddly and frustrating task. If you’ve ever tried to pry off a...
 
 _Read more:_ https://oscarliang.com/tiny-whoop-propeller-removal-tool/
-
-### Review: RadioMaster AX12 — A Hybrid Between RC Radio and Android Tablet
-_Source: Oscar Liang · 2026-03-19_
-
-**Quick summary:** Review: RadioMaster AX12 — A Hybrid Between RC Radio and Android Tablet Back in 2023, I visited RadioMaster&#8217;s office in Shenzhen, China, and the boss s...
-
-_Read more:_ https://oscarliang.com/radiomaster-ax12/
-
-### Préparez votre participation au Paris Air Show 2027
-_Source: FPV Report · 2026-03-10_
-
-**Quick summary:** Paris air show 2027 Du 14 au 20 juin 2027, le monde de l’aéronautique, de la défense et du spatial se retrouvera au Salon International de l’Aéronautique et...
-
-_Read more:_ https://www.fpv-report.com/2026/03/paris-air-show-2027-participation/
 
 ## Gear & Market Watch
 
 ### How to Calibrate Current and Voltage in Betaflight (FPV Drone Guide)
 _Source: Oscar Liang · 2026-04-05_
 
-**Quick summary:** How to Calibrate Current and Voltage in Betaflight (FPV Drone Guide) Accurate current and voltage readings are critical for FPV drones. They tell you your ba...
+**Quick summary:** Accurate current and voltage readings are critical for FPV drones. They tell you your battery level, how much capacity has been used, and how much is left....
 
 _Read more:_ https://oscarliang.com/current-sensor-calibration/
 
 ### Review: WalleFPV Naked DJI O4 Pro – Only 18g! The Upgrade We’ve Been Waiting For!
 _Source: Oscar Liang · 2026-04-04_
 
-**Quick summary:** Review: WalleFPV Naked DJI O4 Pro – Only 18g! The Upgrade We’ve Been Waiting For! The DJI O4 Pro Air Unit is fantastic, but one major downside is its weight....
+**Quick summary:** The DJI O4 Pro Air Unit is fantastic, but one major downside is its weight. At 33g, it’s not ideal for micro quads or builds that aim to stay under the...
 
 _Read more:_ https://oscarliang.com/wallefpv-naked-o4-pro/
 
 ### How to Build an FPV Drone Tutorial (DJI O4 Pro Air Unit)
 _Source: Oscar Liang · 2026-03-30_
 
-**Quick summary:** How to Build an FPV Drone Tutorial (DJI O4 Pro Air Unit) In this comprehensive tutorial, I&#8217;ll walk you through the process of building an FPV drone fro...
+**Quick summary:** In this comprehensive tutorial, I’ll walk you through the process of building an FPV drone from scratch, providing detailed guidance for both analogue and...
 
 _Read more:_ https://oscarliang.com/how-to-build-fpv-drone/
 
 ### Betaflight CLI Explained: Everything You Need to Know As Beginner
 _Source: Oscar Liang · 2026-03-29_
 
-**Quick summary:** Betaflight CLI Explained: Everything You Need to Know As Beginner The Betaflight CLI (Command Line Interface) is a powerful tool that gives FPV drone builder...
+**Quick summary:** The Betaflight CLI (Command Line Interface) is a powerful tool that gives FPV drone builders direct access to all flight controller settings. While most...
 
 _Read more:_ https://oscarliang.com/betaflight-cli-explained/
 
@@ -97,7 +83,7 @@ _Read more:_ https://www.youtube.com/watch?v=lAIAFWFC7Ls
 ### 2026 Hawaii FPV Cinematic Trip
 _Source: Rotor Riot (YouTube) · 2026-03-30_
 
-**Quick summary:** ROTOR RIOT! #FPVFREESTYLE - - - - - - - - - - Support Rotor Riot by purchasing from our store: https://rotorriot.com/?aff=1 Want to fly FPV like the pros? St...
+**Quick summary:** ROTOR RIOT! #FPVFREESTYLE - - - - - - - - - - Support Rotor Riot by purchasing from our store: https://rotorriot.com/?aff=1 Want to fly FPV like the pros?...
 
 _Read more:_ https://www.youtube.com/watch?v=mS2f4tBnH-g
 
