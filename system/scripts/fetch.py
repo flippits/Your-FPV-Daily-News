@@ -17,7 +17,7 @@ import yaml
 from dateutil import parser as date_parser
 
 ROOT = Path(__file__).resolve().parents[2]
-ISSUES_DIR = ROOT / "issues"
+ISSUES_DIR = ROOT / "News"
 SOURCES_PATH = ROOT / "system" / "sources.yaml"
 
 KEYWORDS = [
@@ -125,6 +125,31 @@ STOPWORDS = {
     "racing",
     "freestyle",
 }
+
+CREW_FALLBACKS = [
+    "Joshua Bardwell",
+    "Rotor Riot",
+    "Mr Steele",
+    "Le Drib",
+]
+
+QUICK_FIXES = [
+    "Re‑tension your prop screws and motor bolts — tiny looseness equals big vibes mid‑air.",
+    "Do a 30‑second gyro calibration before the first pack; it saves a whole day of wobbles.",
+    "Check your VTX antenna before power‑up to avoid a silent range killer.",
+    "If your quad drifts, verify your arm bends and re‑level the FC — it’s often hardware, not PID.",
+    "Bind/range‑check your RX after any firmware update — it’s the fastest sanity check.",
+    "Clean your lenses (camera + goggles) — it’s free “HD” and better lines.",
+]
+
+FLIGHT_MOODS = [
+    "Low and smooth — paint the lines.",
+    "Fast, tight, and fearless.",
+    "Quiet freestyle with big flow.",
+    "Crisp turns, clean landings.",
+    "Send it, then butter it.",
+    "Chill cruise, sharp tricks.",
+]
 
 
 @dataclass
@@ -335,6 +360,31 @@ def render_magazine(items: List[Item], date_str: str) -> str:
             lines.append("")
             lines.append(f"_Read more:_ {item.link}")
             lines.append("")
+
+    # Crew Shoutout (pilot/channel spotlight)
+    crew_candidates = [s.name.replace(" (YouTube)", "") for s in load_sources() if "youtube.com" in s.url]
+    if not crew_candidates:
+        crew_candidates = CREW_FALLBACKS
+    crew_pick = crew_candidates[abs(hash(date_str)) % len(crew_candidates)]
+
+    lines.append("## Crew Shoutout")
+    lines.append("")
+    lines.append(f"Today’s spotlight: **{crew_pick}** — go show some love and steal a new line.")
+    lines.append("")
+
+    # Quick Fix
+    quick_fix = QUICK_FIXES[abs(hash(date_str + "fix")) % len(QUICK_FIXES)]
+    lines.append("## Quick Fix")
+    lines.append("")
+    lines.append(f"{quick_fix}")
+    lines.append("")
+
+    # Flight Mood
+    flight_mood = FLIGHT_MOODS[abs(hash(date_str + "mood")) % len(FLIGHT_MOODS)]
+    lines.append("## Flight Mood")
+    lines.append("")
+    lines.append(f"**{flight_mood}**")
+    lines.append("")
 
     if pilots_pick:
         lines.append("## Pilot’s Pick")

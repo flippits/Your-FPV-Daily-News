@@ -18,6 +18,18 @@ _A clean, daily FPV magazine with the best stories, gear updates, and videos —
 
 Fresh FPV drops and community highlights, distilled for a quick read — no digging required.
 
+## Crew Shoutout
+
+Today’s spotlight: **Le Drib** — go show some love and steal a new line.
+
+## Quick Fix
+
+If your quad drifts, verify your arm bends and re‑level the FC — it’s often hardware, not PID.
+
+## Flight Mood
+
+**Crisp turns, clean landings.**
+
 ## Pilot’s Pick
 
 ### General Cherry partnering with Orqa FPV
@@ -29,13 +41,13 @@ _Read more:_ https://www.suasnews.com/2026/04/general-cherry-partnering-with-orq
 
 ## Fast Facts
 
-- Total items scanned: 10
-- Top Stories: 3 · Gear: 4 · Videos: 3
-- This Week’s Trend keywords: tiny, post, appeared, first, oscar
+- Total items scanned: 11
+- Top Stories: 3 · Gear: 4 · Videos: 4
+- This Week’s Trend keywords: https, rotorriot, first, tiny, post
 
 ## This Week’s Trend
 
-Across sources, the most repeated topics are **tiny, post, appeared, first, oscar**.
+Across sources, the most repeated topics are **https, rotorriot, first, tiny, post**.
 
 ## Top Stories
 
@@ -98,6 +110,13 @@ _Source: Rotor Riot (YouTube) · 2026-04-01_
 **Mini‑article:** No summary available in the feed.
 
 _Read more:_ https://www.youtube.com/watch?v=lAIAFWFC7Ls
+
+### 2026 Hawaii FPV Cinematic Trip
+_Source: Rotor Riot (YouTube) · 2026-03-30_
+
+**Mini‑article:** ROTOR RIOT! #FPVFREESTYLE - - - - - - - - - - Support Rotor Riot by purchasing from our store: https://rotorriot.com/?aff=1 Want to fly FPV like the pros?
+
+_Read more:_ https://www.youtube.com/watch?v=mS2f4tBnH-g
 
 ### Drone vs Ocean🚀💦🔫
 _Source: Rotor Riot (YouTube) · 2026-03-30_

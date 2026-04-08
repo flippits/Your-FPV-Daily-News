@@ -6,7 +6,7 @@ concurrency:
 
 on:
   schedule:
-    - cron: "0 11 * * *" # 7am US Eastern during daylight time (UTC-4); 6am during standard time (UTC-5)
+    - cron: "0 12 * * *" # 7am US Eastern during standard time (UTC-5); 8am during daylight time (UTC-4)
   workflow_dispatch:
 
 permissions:
@@ -29,4 +29,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: daily fpv digest"
-          file_pattern: "issues/**/README.md README.md"
+          file_pattern: "News/**/README.md README.md"
