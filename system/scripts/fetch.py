@@ -1,23 +1,20 @@
 #!/usr/bin/env python3
 import argparse
-import json
 import re
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Iterable, List, Optional
 
 import feedparser
 import requests
 import yaml
 from dateutil import parser as date_parser
 
-ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = ROOT / "data"
+ROOT = Path(__file__).resolve().parents[2]
 ISSUES_DIR = ROOT / "issues"
-SOURCES_PATH = ROOT / "sources.yaml"
-README_PATH = ROOT / "README.md"
+SOURCES_PATH = ROOT / "system" / "sources.yaml"
 
 KEYWORDS = [
     "fpv",
@@ -197,43 +194,6 @@ def render_magazine(items: List[Item], date_str: str, limit: int = 30) -> str:
     return "\n".join(lines) + "\n"
 
 
-def update_readme(latest_md: str, date_str: str) -> None:
-    content = [
-        "# your-fpv-daily-news",
-        "",
-        "Daily FPV drone news digest updated automatically.",
-        "",
-        f"**Latest digest:** {date_str}",
-        "",
-        "## Latest Issue",
-        "",
-        latest_md.strip(),
-        "",
-        "## How It Works",
-        "",
-        "- Pulls RSS/Atom feeds from FPV-first sources and broader drone publications.",
-        "- Filters general drone feeds for FPV-relevant keywords.",
-        "- Writes a dated JSON file plus a magazine-style Markdown issue each day.",
-        "",
-        "## Run Locally",
-        "",
-        "```bash",
-        "python -m venv .venv",
-        "source .venv/bin/activate",
-        "pip install -r requirements.txt",
-        "python scripts/fetch.py",
-        "```",
-        "",
-        "## Customize",
-        "",
-        "- Edit `sources.yaml` to add or remove feeds.",
-        "- Update the keyword list in `scripts/fetch.py` for tighter filtering.",
-        "- Change the GitHub Actions schedule in `.github/workflows/daily.yml`.",
-        "",
-    ]
-    README_PATH.write_text("\n".join(content), encoding="utf-8")
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--date", help="YYYY-MM-DD (defaults to today UTC)")
@@ -271,29 +231,10 @@ def main() -> int:
     items = dedupe(items)
     items.sort(key=lambda i: i.published_ts, reverse=True)
 
-    payload: Dict[str, Any] = {
-        "date": date_str,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "count": len(items),
-        "items": [item.__dict__ for item in items],
-    }
-
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    daily_json = DATA_DIR / f"{date_str}.json"
-    daily_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
-    latest_json = DATA_DIR / "latest.json"
-    latest_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
     latest_md = render_magazine(items, date_str, limit=args.limit)
-    latest_md_path = DATA_DIR / "latest.md"
-    latest_md_path.write_text(latest_md, encoding="utf-8")
-
     ISSUES_DIR.mkdir(parents=True, exist_ok=True)
     issue_md_path = ISSUES_DIR / f"{date_str}.md"
     issue_md_path.write_text(latest_md, encoding="utf-8")
-
-    update_readme(latest_md, date_str)
     return 0
 
 
