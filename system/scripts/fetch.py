@@ -3,6 +3,7 @@ import argparse
 import html
 import re
 import sys
+from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -87,6 +88,43 @@ GEAR_KEYWORDS = [
 ]
 
 GEAR_RE = re.compile(r"\b(" + "|".join(re.escape(k) for k in GEAR_KEYWORDS) + r")\b", re.I)
+
+STOPWORDS = {
+    "the",
+    "and",
+    "for",
+    "with",
+    "from",
+    "that",
+    "this",
+    "into",
+    "your",
+    "you",
+    "are",
+    "our",
+    "their",
+    "they",
+    "new",
+    "best",
+    "review",
+    "guide",
+    "how",
+    "why",
+    "what",
+    "when",
+    "where",
+    "about",
+    "vs",
+    "using",
+    "build",
+    "fpv",
+    "drone",
+    "drones",
+    "whoop",
+    "cinewhoop",
+    "racing",
+    "freestyle",
+}
 
 
 @dataclass
@@ -218,6 +256,17 @@ def short_summary(text: str, max_len: int = 160) -> str:
     return trimmed + "..."
 
 
+def mini_article(text: str, max_len: int = 360) -> str:
+    if not text:
+        return ""
+    text = normalize_summary(text)
+    sentences = re.split(r"(?<=[.!?])\s+", text)
+    picked = " ".join(s for s in sentences[:2] if s)
+    if not picked:
+        picked = text
+    return short_summary(picked, max_len=max_len)
+
+
 def render_magazine(items: List[Item], date_str: str) -> str:
     lines = [
         f"# Your FPV Daily News — {date_str}",
@@ -251,6 +300,21 @@ def render_magazine(items: List[Item], date_str: str) -> str:
     gear = [i for i in news if is_gear_related(f"{i.title} {i.summary}")]
     general = [i for i in news if i not in gear]
 
+    # Pilot's Pick: freshest non-video item with a solid summary
+    pick_candidates = [i for i in news if len(i.summary) >= 80]
+    pilots_pick = pick_candidates[0] if pick_candidates else (news[0] if news else None)
+
+    # This Week's Trend: top repeated keywords
+    words = []
+    for item in items:
+        text = f"{item.title} {item.summary}".lower()
+        text = re.sub(r"[^a-z0-9\s-]", " ", text)
+        for w in text.split():
+            if len(w) < 4 or w in STOPWORDS:
+                continue
+            words.append(w)
+    trend_words = [w for w, _ in Counter(words).most_common(5)]
+
     def render_section(title: str, section_items: List[Item], max_items: int) -> None:
         lines.append(f"## {title}")
         lines.append("")
@@ -260,17 +324,44 @@ def render_magazine(items: List[Item], date_str: str) -> str:
             return
         for item in section_items[:max_items]:
             published = item.published[:10]
-            summary = short_summary(item.summary)
+            summary = mini_article(item.summary)
             lines.append(f"### {item.title}")
             lines.append(f"_Source: {item.source} · {published}_")
             lines.append("")
             if summary:
-                lines.append(f"**Quick summary:** {summary}")
+                lines.append(f"**Mini‑article:** {summary}")
             else:
-                lines.append("**Quick summary:** No summary available in the feed.")
+                lines.append("**Mini‑article:** No summary available in the feed.")
             lines.append("")
             lines.append(f"_Read more:_ {item.link}")
             lines.append("")
+
+    if pilots_pick:
+        lines.append("## Pilot’s Pick")
+        lines.append("")
+        lines.append(f"### {pilots_pick.title}")
+        lines.append(f"_Source: {pilots_pick.source} · {pilots_pick.published[:10]}_")
+        lines.append("")
+        lines.append(f"**Why it’s worth your time:** {mini_article(pilots_pick.summary, max_len=420)}")
+        lines.append("")
+        lines.append(f"_Read more:_ {pilots_pick.link}")
+        lines.append("")
+
+    lines.append("## Fast Facts")
+    lines.append("")
+    lines.append(f"- Total items scanned: {len(items)}")
+    lines.append(f"- Top Stories: {min(6, len(general))} · Gear: {min(4, len(gear))} · Videos: {min(4, len(videos))}")
+    if trend_words:
+        lines.append(f"- This Week’s Trend keywords: {', '.join(trend_words)}")
+    lines.append("")
+
+    lines.append("## This Week’s Trend")
+    lines.append("")
+    if trend_words:
+        lines.append(f"Across sources, the most repeated topics are **{', '.join(trend_words)}**.")
+    else:
+        lines.append("Not enough data today to detect a clear trend.")
+    lines.append("")
 
     render_section("Top Stories", general, 6)
     render_section("Gear & Market Watch", gear, 4)
